@@ -1,9 +1,4 @@
-type CategoryBannerProps = {
-  name: string;
-  description: string;
-};
-
-function CategoryBanner({ name, description }: CategoryBannerProps) {
+function CategoryBanner({ name, description }: { name: string; description: string }) {
   return (
     <div className="mb-6">
       <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{name}</h1>

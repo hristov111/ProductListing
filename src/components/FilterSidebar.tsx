@@ -12,117 +12,80 @@ const COLOR_MAP: Record<(typeof COLOR_OPTIONS)[number], string> = {
   Brown: "#92400E",
 };
 
-type ExpandedSections = {
-  color: boolean;
-  size: boolean;
-  price: boolean;
-};
-
 type FilterSidebarProps = {
   filters: Filters;
-  onFilterChange: (nextFilters: Filters) => void;
+  onFilterChange: (f: Filters) => void;
   availableSizes: string[];
   priceRange: [number, number];
   mobileOpen: boolean;
   onMobileClose: () => void;
 };
 
-function FilterSidebar({
-  filters,
-  onFilterChange,
-  availableSizes,
-  priceRange,
-  mobileOpen,
-  onMobileClose,
-}: FilterSidebarProps) {
-  const [expandedSections, setExpandedSections] = useState<ExpandedSections>({
-    color: true,
-    size: true,
-    price: true,
-  });
+function FilterSidebar({ filters, onFilterChange, availableSizes, priceRange, mobileOpen, onMobileClose }: FilterSidebarProps) {
+  const [expanded, setExpanded] = useState({ color: true, size: true, price: true });
 
-  const toggleSection = (section: keyof ExpandedSections) => {
-    setExpandedSections((previous) => ({
-      ...previous,
-      [section]: !previous[section],
-    }));
+  const toggle = (section: keyof typeof expanded) => {
+    setExpanded((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
   const handleColorToggle = (color: string) => {
-    const nextColors = filters.colors.includes(color)
-      ? filters.colors.filter((value) => value !== color)
+    const colors = filters.colors.includes(color)
+      ? filters.colors.filter((c) => c !== color)
       : [...filters.colors, color];
-
-    onFilterChange({ ...filters, colors: nextColors });
+    onFilterChange({ ...filters, colors });
   };
 
   const handleSizeToggle = (size: string) => {
-    const nextSizes = filters.sizes.includes(size)
-      ? filters.sizes.filter((value) => value !== size)
+    const sizes = filters.sizes.includes(size)
+      ? filters.sizes.filter((s) => s !== size)
       : [...filters.sizes, size];
-
-    onFilterChange({ ...filters, sizes: nextSizes });
+    onFilterChange({ ...filters, sizes });
   };
 
-  const handlePriceChange = (type: "min" | "max", value: string) => {
-    const parsedValue = Number(value);
-    const nextRange: [number, number] =
-      type === "min"
-        ? [parsedValue, filters.priceRange[1]]
-        : [filters.priceRange[0], parsedValue];
-
-    onFilterChange({ ...filters, priceRange: nextRange });
+  const handlePriceChange = (type: "min" | "max", val: string) => {
+    const n = Number(val);
+    const range: [number, number] =
+      type === "min" ? [n, filters.priceRange[1]] : [filters.priceRange[0], n];
+    onFilterChange({ ...filters, priceRange: range });
   };
 
   const clearAll = () => {
-    onFilterChange({
-      colors: [],
-      sizes: [],
-      priceRange: [priceRange[0], priceRange[1]],
-    });
+    onFilterChange({ colors: [], sizes: [], priceRange: [priceRange[0], priceRange[1]] });
   };
 
-  const hasActiveFilters =
+  const isFiltered =
     filters.colors.length > 0 ||
     filters.sizes.length > 0 ||
     filters.priceRange[0] !== priceRange[0] ||
     filters.priceRange[1] !== priceRange[1];
 
+  // shared JSX used both in desktop sidebar and mobile drawer
   const content = (
     <div className="space-y-1">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-gray-900">Filters</h2>
-        {hasActiveFilters && (
-          <button
-            onClick={clearAll}
-            className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
-          >
+        {isFiltered && (
+          <button onClick={clearAll} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
             Clear All
           </button>
         )}
       </div>
 
+      {/* color */}
       <div className="border-t border-gray-200 pt-4">
         <button
-          onClick={() => toggleSection("color")}
+          onClick={() => toggle("color")}
           className="flex items-center justify-between w-full text-left text-sm font-semibold text-gray-800 mb-3"
         >
           Color
           <svg
-            className={`w-4 h-4 transition-transform ${expandedSections.color ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+            className={`w-4 h-4 transition-transform ${expanded.color ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-        {expandedSections.color && (
+        {expanded.color && (
           <div className="flex flex-wrap gap-2 pb-4">
             {COLOR_OPTIONS.map((color) => (
               <button
@@ -137,11 +100,7 @@ function FilterSidebar({
                 style={{ backgroundColor: COLOR_MAP[color] }}
               >
                 {filters.colors.includes(color) && (
-                  <svg
-                    className="w-4 h-4 mx-auto"
-                    viewBox="0 0 20 20"
-                    fill={color === "White" ? "#111" : "#fff"}
-                  >
+                  <svg className="w-4 h-4 mx-auto" viewBox="0 0 20 20" fill={color === "White" ? "#111" : "#fff"}>
                     <path
                       fillRule="evenodd"
                       d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -155,27 +114,21 @@ function FilterSidebar({
         )}
       </div>
 
+      {/* size */}
       <div className="border-t border-gray-200 pt-4">
         <button
-          onClick={() => toggleSection("size")}
+          onClick={() => toggle("size")}
           className="flex items-center justify-between w-full text-left text-sm font-semibold text-gray-800 mb-3"
         >
           Size
           <svg
-            className={`w-4 h-4 transition-transform ${expandedSections.size ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+            className={`w-4 h-4 transition-transform ${expanded.size ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-        {expandedSections.size && (
+        {expanded.size && (
           <div className="flex flex-wrap gap-2 pb-4">
             {availableSizes.map((size) => (
               <button
@@ -194,27 +147,21 @@ function FilterSidebar({
         )}
       </div>
 
+      {/* price range */}
       <div className="border-t border-gray-200 pt-4">
         <button
-          onClick={() => toggleSection("price")}
+          onClick={() => toggle("price")}
           className="flex items-center justify-between w-full text-left text-sm font-semibold text-gray-800 mb-3"
         >
           Price Range
           <svg
-            className={`w-4 h-4 transition-transform ${expandedSections.price ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+            className={`w-4 h-4 transition-transform ${expanded.price ? "rotate-180" : ""}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-        {expandedSections.price && (
+        {expanded.price && (
           <div className="pb-4 space-y-3">
             <div className="flex items-center gap-3">
               <div className="flex-1">
@@ -224,11 +171,11 @@ function FilterSidebar({
                   min={priceRange[0]}
                   max={filters.priceRange[1]}
                   value={filters.priceRange[0]}
-                  onChange={(event) => handlePriceChange("min", event.target.value)}
+                  onChange={(e) => handlePriceChange("min", e.target.value)}
                   className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 outline-none"
                 />
               </div>
-              <span className="text-gray-400 mt-5">-</span>
+              <span className="text-gray-400 mt-5">—</span>
               <div className="flex-1">
                 <label className="text-xs text-gray-500 mb-1 block">Max ($)</label>
                 <input
@@ -236,18 +183,17 @@ function FilterSidebar({
                   min={filters.priceRange[0]}
                   max={priceRange[1]}
                   value={filters.priceRange[1]}
-                  onChange={(event) => handlePriceChange("max", event.target.value)}
+                  onChange={(e) => handlePriceChange("max", e.target.value)}
                   className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 outline-none"
                 />
               </div>
             </div>
-
             <input
               type="range"
               min={priceRange[0]}
               max={priceRange[1]}
               value={filters.priceRange[1]}
-              onChange={(event) => handlePriceChange("max", event.target.value)}
+              onChange={(e) => handlePriceChange("max", e.target.value)}
               className="w-full accent-indigo-600"
             />
             <div className="flex justify-between text-xs text-gray-400">
@@ -272,22 +218,9 @@ function FilterSidebar({
           <div className="absolute left-0 top-0 h-full w-72 bg-white shadow-xl p-5 overflow-y-auto animate-slide-in">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-900">Filters</h2>
-              <button
-                onClick={onMobileClose}
-                className="p-1 rounded-md hover:bg-gray-100"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+              <button onClick={onMobileClose} className="p-1 rounded-md hover:bg-gray-100">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>

@@ -19,6 +19,7 @@ export type Category = {
   products: Product[];
 };
 
+// filters state shape
 export type Filters = {
   colors: string[];
   sizes: string[];

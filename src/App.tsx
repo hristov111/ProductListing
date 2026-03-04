@@ -20,47 +20,42 @@ function App() {
     priceRange: [0, 200],
   });
   const [sortBy, setSortBy] = useState<SortBy>("name-asc");
-  const [visibleCount, setVisibleCount] = useState<number>(PRODUCTS_PER_PAGE);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState<boolean>(false);
+  const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_PAGE);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const category = useMemo<Category | undefined>(
-    () => categories.find((item) => item.id === activeCategory),
+    () => categories.find((c) => c.id === activeCategory),
     [activeCategory]
   );
 
+  // need this as its own memo otherwise the filter useMemo re-runs on every render
   const allProducts = useMemo<Product[]>(
     () => category?.products ?? [],
     [category]
   );
 
   const priceRange = useMemo<[number, number]>(() => {
-    if (allProducts.length === 0) {
-      return [0, 200];
-    }
-
-    const prices = allProducts.map((product) => product.price);
+    if (allProducts.length === 0) return [0, 200];
+    const prices = allProducts.map((p) => p.price);
     return [Math.floor(Math.min(...prices)), Math.ceil(Math.max(...prices))];
   }, [allProducts]);
 
   const availableSizes = useMemo<string[]>(() => {
-    const sizeSet = new Set<string>();
-    allProducts.forEach((product) => {
-      product.sizes.forEach((size) => sizeSet.add(size));
-    });
+    const seen = new Set<string>();
+    allProducts.forEach((p) => p.sizes.forEach((s) => seen.add(s)));
 
-    const allSizes = Array.from(sizeSet);
-    const numericSizes = allSizes
-      .filter((size) => !Number.isNaN(Number(size)))
-      .sort((a, b) => Number(a) - Number(b));
+    const all = Array.from(seen);
+    const numeric = all.filter((s) => !Number.isNaN(Number(s))).sort((a, b) => Number(a) - Number(b));
     const letterOrder = ["XS", "S", "M", "L", "XL", "XXL"];
-    const letterSizes = allSizes
-      .filter((size) => Number.isNaN(Number(size)))
+    const letters = all
+      .filter((s) => Number.isNaN(Number(s)))
       .sort((a, b) => letterOrder.indexOf(a) - letterOrder.indexOf(b));
 
-    return [...letterSizes, ...numericSizes];
+    return [...letters, ...numeric];
   }, [allProducts]);
 
+  // reset filters whenever the category changes
   useEffect(() => {
     setFilters({ colors: [], sizes: [], priceRange });
     setSortBy("name-asc");
@@ -71,19 +66,15 @@ function App() {
     let result = [...allProducts];
 
     if (filters.colors.length > 0) {
-      result = result.filter((product) => filters.colors.includes(product.color));
+      result = result.filter((p) => filters.colors.includes(p.color));
     }
 
     if (filters.sizes.length > 0) {
-      result = result.filter((product) =>
-        product.sizes.some((size) => filters.sizes.includes(size))
-      );
+      result = result.filter((p) => p.sizes.some((s) => filters.sizes.includes(s)));
     }
 
     result = result.filter(
-      (product) =>
-        product.price >= filters.priceRange[0] &&
-        product.price <= filters.priceRange[1]
+      (p) => p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
     );
 
     switch (sortBy) {
@@ -109,19 +100,18 @@ function App() {
   const visibleProducts = filteredAndSorted.slice(0, visibleCount);
   const hasMore = visibleCount < filteredAndSorted.length;
 
-  const handleCategoryChange = useCallback((categoryId: string) => {
-    setActiveCategory(categoryId);
+  const handleCategoryChange = useCallback((id: string) => {
+    setActiveCategory(id);
   }, []);
 
   const handleAddToCart = useCallback((product: Product) => {
     setToast(`"${product.name}" added to cart!`);
-    window.setTimeout(() => {
-      setToast(null);
-    }, 2500);
+    // console.log("added to cart:", product.id);
+    window.setTimeout(() => setToast(null), 2500);
   }, []);
 
   const handleLoadMore = useCallback(() => {
-    setVisibleCount((previousCount) => previousCount + PRODUCTS_PER_PAGE);
+    setVisibleCount((prev) => prev + PRODUCTS_PER_PAGE);
   }, []);
 
   return (
@@ -174,12 +164,7 @@ function App() {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <span className="text-sm font-medium">{toast}</span>
           </div>

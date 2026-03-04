@@ -1,12 +1,5 @@
-type LoadMoreProps = {
-  onClick: () => void;
-  hasMore: boolean;
-};
-
-function LoadMore({ onClick, hasMore }: LoadMoreProps) {
-  if (!hasMore) {
-    return null;
-  }
+function LoadMore({ onClick, hasMore }: { onClick: () => void; hasMore: boolean }) {
+  if (!hasMore) return null;
 
   return (
     <div className="flex justify-center mt-8">

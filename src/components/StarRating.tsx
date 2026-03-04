@@ -1,14 +1,10 @@
-import type { ReactNode } from "react";
+// renders 1-5 stars, supports half stars via svg gradient trick
+function StarRating({ rating }: { rating: number }) {
+  const stars = [];
 
-type StarRatingProps = {
-  rating: number;
-};
-
-function StarRating({ rating }: StarRatingProps) {
-  const stars: ReactNode[] = [];
-
-  for (let i = 1; i <= 5; i += 1) {
+  for (let i = 1; i <= 5; i++) {
     const fill = rating >= i ? "full" : rating >= i - 0.5 ? "half" : "empty";
+
     stars.push(
       <span key={i} className="inline-block w-4 h-4">
         {fill === "full" && (
@@ -19,6 +15,7 @@ function StarRating({ rating }: StarRatingProps) {
         {fill === "half" && (
           <svg viewBox="0 0 20 20" className="w-4 h-4">
             <defs>
+              {/* each star needs its own gradient id or they bleed into each other */}
               <linearGradient id={`half-${i}`}>
                 <stop offset="50%" stopColor="#FBBF24" />
                 <stop offset="50%" stopColor="#D1D5DB" />

@@ -6,11 +6,11 @@ import type { Category } from "./types";
 type HeaderProps = {
   categories: Category[];
   activeCategory: string;
-  onCategoryChange: (categoryId: string) => void;
+  onCategoryChange: (id: string) => void;
 };
 
 function Header({ categories, activeCategory, onCategoryChange }: HeaderProps) {
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 bg-gray-900 shadow-lg">
@@ -22,7 +22,7 @@ function Header({ categories, activeCategory, onCategoryChange }: HeaderProps) {
             activeCategory={activeCategory}
             onCategoryChange={onCategoryChange}
             menuOpen={menuOpen}
-            onToggleMenu={() => setMenuOpen((open) => !open)}
+            onToggleMenu={() => setMenuOpen((prev) => !prev)}
           />
         </div>
       </div>
