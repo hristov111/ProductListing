@@ -119,3 +119,17 @@ npm run preview
 - **Shoes** — 25 products, colors: Black, White, Red, Blue, Brown, sizes: 7–12, prices: $40–$200. Images from `picsum.photos` (local shoe images can be added to `public/shoes/`).
 
 Some products in each category include a discounted price to demonstrate the sale badge.
+
+## Challenges Encountered
+
+1. **Exhaustive-deps lint rule** — React's `useMemo` hook requires every variable it reads to be declared as a dependency. The derived `allProducts` array was initially computed inline from `category?.products`, which caused the linter to flag it as a new reference on every render, breaking downstream `useMemo` hooks. The fix was to wrap `allProducts` in its own `useMemo` so it only recomputes when the category changes.
+
+2. **Filter state reset on category switch** — T-Shirts use letter sizes (S, M, L, XL) and a price range of $15–$60, while Shoes use numeric sizes (7–12) and a price range of $40–$200. When the user switches category the old filters become meaningless. A `useEffect` watching `activeCategory` resets colors, sizes, and the price range to the new category's defaults every time the user navigates.
+
+3. **Half-star SVG ratings** — Half-star rendering requires an SVG `<linearGradient>` split 50/50 between gold and grey. Because multiple `ProductCard` components render simultaneously, each gradient needed a unique `id` (using the star index) to avoid one card's gradient leaking into another card's stars.
+
+4. **Mobile filter drawer UX** — The filter sidebar needed to behave as a persistent panel on desktop and a slide-out overlay on mobile, without duplicating the filter markup. The solution renders one shared `content` block and conditionally places it either inside the `<aside>` (desktop) or inside the fixed-position drawer (mobile), with a CSS keyframe `slide-in` animation on open.
+
+5. **Migrating from Create React App to Vite + TypeScript** — The project was initially bootstrapped with CRA (Create React App). CRA's `react-scripts` is incompatible with TypeScript 5, and its build pipeline is significantly slower than Vite. The migration involved replacing `react-scripts` with `@vitejs/plugin-react`, adding `tsconfig.json`, renaming all `.js`/`.jsx` source files to `.tsx`/`.ts`, introducing shared types in `src/types.ts`, and removing the CRA-specific `public/index.html` in favour of a root-level Vite `index.html`. After removing the old `.js` files a `tsc --noEmit` check was added to the build script to catch type errors before Vite bundles.
+
+6. **Nested repository structure** — The initial git setup placed all project files inside a `project-listing/` subfolder at the repo root, making the GitHub view show only a single folder. The fix was to move all files to the repo root, remove the subfolder from git tracking, and recommit so the repository shows `src/`, `public/`, `package.json`, etc. directly.
