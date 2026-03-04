@@ -116,7 +116,7 @@ npm run preview
 ## Sample Data
 
 - **T-Shirts & Tops** — 25 products, colors: Black, White, Red, Blue, Green, sizes: S M L XL, prices: $15–$60. Images served from `public/productImages/`.
-- **Shoes** — 25 products, colors: Black, White, Red, Blue, Brown, sizes: 7–12, prices: $40–$200. Images from `picsum.photos` (local shoe images can be added to `public/shoes/`).
+- **Shoes** — 25 products, colors: Black, White, Red, Blue, Brown, sizes: 7–12, prices: $40–$200. Images served from `public/shoes/`.
 
 Some products in each category include a discounted price to demonstrate the sale badge.
 

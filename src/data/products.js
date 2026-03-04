@@ -536,7 +536,7 @@ const categories = [
         description: "Mirror-shine patent leather shoes for black-tie events.",
         price: 159.99,
         originalPrice: 199.99,
-      image: "/shoes/sh-023.jpg",
+        image: "/shoes/sh-023.jpg",
         rating: 4.5,
         color: "Black",
         sizes: ["8", "9", "10", "11"],
